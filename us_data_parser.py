@@ -33,8 +33,8 @@ def read_us_data():
         # data = pd.concat([data,temp_data],axis=0)
         data = data.append(temp_data)
 
-        print(file_path)
-        print(len(data))
+        # print(file_path)
+        # print(len(data))
 
         return data
 
@@ -43,9 +43,15 @@ def read_us_data():
 
 
 if __name__ == '__main__':
+    print("start...")
     data = read_us_data()
+    print("get data OK...")
     product_desc_list = data['Product Desc']
     product_desc_map = map(lambda x:str(x).replace('<br/>', ''), product_desc_list)
+    print("filter desc OK...")
     data['product_desc_keys'] = list(map(util.get_key_words, product_desc_map))
+    print("get desc keys OK...")
     # 存数据
-    print(data['product_desc_keys'])
+    data.to_csv(r'./temp_data/us_desc_keys.csv', sep='\t', index=False)
+    print("save new data OK...")
+    print("finish~")
