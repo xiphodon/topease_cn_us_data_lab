@@ -25,20 +25,29 @@ def read_us_data():
 
     for file_name in file_list:
         file_path = os.path.join(base_path,file_name)
-        temp_data = pd.read_csv(file_path, encoding='ansi', sep='\t')
+        temp_data = pd.read_csv(file_path, encoding='ansi', sep='\t', dtype=np.str)
+
+        # temp_data = temp_data.iloc[:1000,:]
 
         temp_data = temp_data[col_name]
-        temp_data['Country'] = list(map(lambda x: str(x).split(',')[-1].strip(), temp_data['Country']))
 
         # data = pd.concat([data,temp_data],axis=0)
         data = data.append(temp_data)
 
         # print(file_path)
-        # print(len(data))
+        print("len(data):",len(data))
 
         return data
 
-    return data
+    # return data
+
+
+def filter_desc_and_get_desc_keys(product_desc_list):
+    '''
+    过滤描述信息，并提取描述关键词
+    :return:
+    '''
+    return list(map(lambda x: util.get_key_words(str(x).replace('<br/>', '')),product_desc_list))
 
 
 
@@ -46,12 +55,17 @@ if __name__ == '__main__':
     print("start...")
     data = read_us_data()
     print("get data OK...")
+
+    data['Country'] = list(map(lambda x: str(x).split(',')[-1].strip(), data['Country']))
+    print("filter country OK...")
+
     product_desc_list = data['Product Desc']
-    product_desc_map = map(lambda x:str(x).replace('<br/>', ''), product_desc_list)
-    print("filter desc OK...")
-    data['product_desc_keys'] = list(map(util.get_key_words, product_desc_map))
-    print("get desc keys OK...")
+    data['product_desc_keys'] = filter_desc_and_get_desc_keys(product_desc_list)
+    print("filter desc and get desc keys OK...")
     # 存数据
     data.to_csv(r'./temp_data/us_desc_keys.csv', sep='\t', index=False)
     print("save new data OK...")
     print("finish~")
+
+    print("find nike...")
+    print([item for item in data['product_desc_keys'] if 'nike' in item])
