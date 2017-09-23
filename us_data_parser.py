@@ -10,6 +10,8 @@ import pandas as pd
 import os
 import numpy as np
 import util
+import time
+import datetime
 
 base_path = r"E:\work_all\topease\US_data\database_sep_tab\dbo_usa_201607_09"
 
@@ -37,9 +39,9 @@ def read_us_data():
         # print(file_path)
         print("len(data):",len(data))
 
-        return data
+        # return data
 
-    # return data
+    return data
 
 
 def filter_desc_and_get_desc_keys(product_desc_list):
@@ -52,6 +54,10 @@ def filter_desc_and_get_desc_keys(product_desc_list):
 
 
 if __name__ == '__main__':
+
+    print(datetime.datetime.now())
+    time1 = time.time()
+
     print("start...")
     data = read_us_data()
     print("get data OK...")
@@ -67,5 +73,9 @@ if __name__ == '__main__':
     print("save new data OK...")
     print("finish~")
 
-    print("find nike...")
-    print([item for item in data['product_desc_keys'] if 'nike' in item])
+    print(datetime.datetime.now())
+    time2 = time.time()
+    print(time2 - time1)
+
+    # print("find nike...")
+    # print([item for item in data['product_desc_keys'] if 'nike' in item])
