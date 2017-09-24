@@ -37,7 +37,7 @@ def get_key_words(content):
     word_pos_tag_NN_stem_set = {lemmatizer.lemmatize(item[0])
                                 for item in word_pos_tag_set
                                 if 'NN' in item[1]
-                                and len(item[0].strip()) > 1
+                                and len(lemmatizer.lemmatize(item[0])) > 1
                                 and not bool(re.search(r'\d', item[0]))}
     # 关键字拼接
     word_pos_tag_NN_str = ",".join(word_pos_tag_NN_stem_set)
