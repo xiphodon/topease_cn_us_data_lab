@@ -15,7 +15,7 @@ import datetime
 
 base_path = r"E:\work_all\topease\US_data\database_sep_tab\dbo_usa_201607_09"
 
-debug = True
+debug = False
 
 def read_us_data():
     '''
@@ -33,7 +33,7 @@ def read_us_data():
 
         if debug:
             # 实验样本
-            temp_data = temp_data.iloc[1645,:]
+            temp_data = temp_data.iloc[:1000,:]
 
         temp_data = temp_data[col_name]
 
@@ -41,7 +41,7 @@ def read_us_data():
         data = data.append(temp_data)
 
         # print(file_path)
-        print("len(data):",len(data))
+        util.my_print("len(data):",len(data))
 
         if debug:
             # 实验数据
@@ -63,15 +63,22 @@ if __name__ == '__main__':
     print("===== get data OK =====")
 
     print("===== filter country ... =====")
-    data['Country'] = list(map(lambda x: str(x).split(',')[-1].strip(), data['Country']))
+    # data['Country'] = list(map(lambda x: str(x).split(',')[-1].strip(), data['Country']))
+    data['Country'] = [str(item).split(',')[-1].strip() for item in data['Country']]
     print("===== filter country OK =====")
 
+    print("===== filter Product Desc ... =====")
+    # data['Product Desc'] = list(map(lambda x: str(x).replace('<br/>', ''), data['Product Desc']))
+    data['Product Desc'] = [str(item).replace('<br/>','') for item in data['Product Desc']]
+    print("===== filter Product Desc OK =====")
+
     print("===== check hs desc ... =====")
-    data['hs2desc'] = list(map(util.hs2desc, data['HS Code']))
+    # data['hs2desc'] = list(map(util.hs2desc, data['HS Code']))
+    data['hs2desc'] = [util.hs2desc(item) for item in data['HS Code']]
     print("===== check hs desc OK =====")
 
     print("===== filter desc and get desc keys ... =====")
-    data['hs2desc2keys'], data['product_desc_keys'] = util.filter_desc_and_get_desc_keys(data['hs2desc'], data['Product Desc'])
+    data['hs2desc2keys'], data['product_desc_keys'], data['all_keys'] = util.filter_desc_and_get_desc_keys(data['hs2desc'], data['Product Desc'])
     print("===== filter desc and get desc keys OK =====")
 
     print("===== save new data ... =====")

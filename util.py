@@ -18,6 +18,8 @@ import re
 import json
 import numpy as np
 
+show_my_print = True
+
 def get_key_words(content):
     '''
     获取内容中关键字
@@ -33,7 +35,7 @@ def get_key_words(content):
     word_list = word_tokenize(content.lower())
     # 分析关键字词性
     word_pos_tag_set = set(nltk.pos_tag(word_list))
-    print(word_pos_tag_set)
+    # print(word_pos_tag_set)
     # 筛选名词类关键词，筛选停止词，筛选关键词位数，筛选关键词是否含有数字，并提取词干/原型
     # word_pos_tag_NN_stem_set = {stemmer.stem(item[0]) for item in word_pos_tag_set if 'NN' in item[1] and len(item[0]) > 1 and not bool(re.search(r'\d', item[0]))}
     word_pos_tag_NN_stem_set = {lemmatizer.lemmatize(item[0])
@@ -46,9 +48,9 @@ def get_key_words(content):
     # 关键字拼接
     word_pos_tag_NN_str = ",".join(word_pos_tag_NN_stem_set)
 
-    print(word_pos_tag_NN_str)
+    # print(word_pos_tag_NN_str)
 
-    return word_pos_tag_NN_str
+    return word_pos_tag_NN_stem_set
 
 
 def filter_desc(product_desc_list):
@@ -118,7 +120,7 @@ def hs2desc(hs_codes):
 
     # 一条订单有多个hs编码时
     hs_codes_list = str(hs_codes).split(',')
-    print(hs_codes_list)
+    # print(hs_codes_list)
 
     return ','.join(list(map(check_hs_code_mapping_desc, hs_codes_list)))
 
@@ -129,15 +131,41 @@ def filter_desc_and_get_desc_keys(hs2desc_list, product_desc_list):
     :return:
     '''
 
-    hs2desc2keys_list = []
-    product_desc_keys_list = []
+    # hs2desc2keys_list = []
+    # product_desc_keys_list = []
+    # all_keys_list = []
+    #
+    # for hs2desc, product_desc in zip(hs2desc_list, product_desc_list):
+    #
+    #     this_item_hs2desc_keys_set = get_key_words(hs2desc)
+    #     this_item_product_desc_keys_set = get_key_words(product_desc)
+    #
+    #     hs2desc2keys_list.append(','.join(this_item_hs2desc_keys_set))
+    #     product_desc_keys_list.append(','.join(this_item_product_desc_keys_set))
+    #
+    #     all_keys_list.append(','.join(this_item_hs2desc_keys_set | this_item_product_desc_keys_set))
 
-    for hs2desc, product_desc in zip(hs2desc_list, product_desc_list):
-        hs2desc2keys_list.append(get_key_words(str(hs2desc).replace('<br/>', '')))
-        product_desc_keys_list.append(get_key_words(str(product_desc).replace('<br/>', '')))
+    my_print("filter desc and get desc keys (get keys set ...) ...")
+    hs2desc2keys_set_list = [get_key_words(item) for item in hs2desc_list]
+    my_print("filter desc and get desc keys (get keys set OK 1/3 ...) ...")
+    product_desc_keys_set_list = [get_key_words(item) for item in product_desc_list]
+    my_print("filter desc and get desc keys (get keys set OK 2/3 ...) ...")
+    all_keys_set_list = [(item1 | item2) for item1,item2 in zip(hs2desc2keys_set_list,product_desc_keys_set_list)]
+    my_print("filter desc and get desc keys (get keys set OK) ...")
 
-    return hs2desc2keys_list, product_desc_keys_list
+    my_print("filter desc and get desc keys (get keys string ...) ...")
+    hs2desc2keys_list = [','.join(item) for item in hs2desc2keys_set_list]
+    my_print("filter desc and get desc keys (get keys string OK 1/3 ...) ...")
+    product_desc_keys_list = [','.join(item) for item in product_desc_keys_set_list]
+    my_print("filter desc and get desc keys (get keys string OK 2/3 ...) ...")
+    all_keys_list = [','.join(item) for item in all_keys_set_list]
+    my_print("filter desc and get desc keys (get keys string OK) ...")
 
+    return hs2desc2keys_list, product_desc_keys_list, all_keys_list
+
+def my_print(*args, sep=' ', end='\n', file=None):
+    if show_my_print:
+        print(*args, sep=' ', end='\n', file=None)
 
 if __name__ == "__main__":
     print("\n===== HS查询系统 =====\n")
@@ -147,5 +175,5 @@ if __name__ == "__main__":
             print("\n===== 退出HS查询系统 =====\n")
             break
         else:
-            check_hs_code_mapping_desc(input_str,hs_mapping_dict)
+            print(check_hs_code_mapping_desc(input_str))
 
