@@ -65,6 +65,40 @@ headers = {'Host': 'translate.google.cn',
            'Connection': 'keep-alive'}
 
 
+# 翻译缓存开关
+cache_switch = True
+# 缓存的翻译词组对（翻译对照表）
+cache_cn2en_dict = {}
+# 对照表地址
+cache_cn2en_path = r'./temp_data/cache_cn2en_dict.json'
+# 读取翻译对照表
+if os.path.exists(cache_cn2en_path):
+    with open(cache_cn2en_path,'r') as fp:
+        cache_cn2en_stream = fp.read()
+        cache_cn2en_dict = json.loads(cache_cn2en_stream)
+
+
+def cache_cn2en(cn_str):
+    '''
+    中译英缓存
+    :param cn_str:
+    :return:
+    '''
+    if cache_switch:
+        # 进行缓存
+        if cn_str not in cache_cn2en_dict:
+            cache_cn2en_cnstr_dict = cache_cn2en_dict[cn_str] = {}
+            cache_cn2en_cnstr_dict['used_times'] = 0
+            cache_cn2en_cnstr_dict['en_desc'] = cn2en(cn_str)
+
+        cache_cn2en_cnstr_dict = cache_cn2en_dict[cn_str]
+        cache_cn2en_cnstr_dict['used_times'] += 1
+        cache_cn2en_cnstr_dict['update_datetime'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        return cache_cn2en_cnstr_dict['en_desc']
+
+    else:
+        # 不缓存
+        return cn2en(cn_str)
 
 def cn2en(cn_str):
     '''
@@ -72,16 +106,44 @@ def cn2en(cn_str):
     :param cn_str:中文，需加密（密文形如：%E4%BB%8A%E5%A4%A9%E5%A4%A9%E6%B0%94%E4%B8%8D%E9%94%99）
     :return:
     '''
+
     encode_cn_str = urllib.parse.quote(cn_str)
     r = requests.get(google_translate_url + encode_cn_str, headers=headers)
     en_str = json.loads(r.text)[0][0][0]
+
     return en_str
 
 
+def save_cache_cn2en_dict():
+    '''
+    持久化中译英字典
+    :return:
+    '''
+    with open(r'./temp_data/cache_cn2en_dict.json','w') as fp:
+        fp.write(json.dumps(cache_cn2en_dict))
+
 
 if __name__ == '__main__':
+    print(datetime.datetime.now())
+    time1 = time.time()
+
     data = read_cn_data()
+    print("====== get data OK ======")
+
     data['hs2desc'] = [util.hs2desc(item) for item in data['海关编码']]
-    data['cn_product_desc2en_product_desc'] = [cn2en(item) for item in data['商品名称']]
+    print("====== get hs2desc OK ======")
+
+    data['cn_product_desc2en_product_desc'] = [cache_cn2en(item) for item in data['商品名称']]
+    print("====== cn_product_desc2en_product_desc ======")
+
     data.to_csv(r'./temp_data/cn_10000.csv', sep='\t', index=False, encoding='utf8')
+    print("====== save data OK ======")
+
+    save_cache_cn2en_dict()
+    print("====== save save_cache_cn2en_dict OK ======")
+
     print("finish")
+
+    print(datetime.datetime.now())
+    time2 = time.time()
+    print((time2 - time1))
