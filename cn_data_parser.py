@@ -16,6 +16,7 @@ import datetime
 import requests
 import json
 import urllib.parse
+from translate import Translator
 
 base_path = r"E:\work_all\topease\CN_data\database_sep_^\201604_201611"
 
@@ -59,7 +60,6 @@ def read_cn_data():
 
     return data
 
-
 google_translate_url = r'http://translate.google.cn/translate_a/single?client=gtx&sl=zh-CN&tl=en&dt=t&q='
 headers = {'Host': 'translate.google.cn',
            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:55.0) Gecko/20100101 Firefox/55.0',
@@ -68,6 +68,9 @@ headers = {'Host': 'translate.google.cn',
            'Accept-Encoding': 'gzip, deflate, br',
            'Referer': 'https://translate.google.cn/',
            'Connection': 'keep-alive'}
+# 谷歌翻译器
+# translator = Translator(from_lang='zh', to_lang="en")
+# result = translator.translate('你好')
 
 
 
@@ -135,9 +138,8 @@ def cn2en(cn_str):
         else:
             return ''
     except Exception as e:
-        print(cn_str,e)
+        print(cn_str,'google',e)
         return ''
-
 
 def save_cache_cn2en_dict():
     '''
@@ -148,7 +150,7 @@ def save_cache_cn2en_dict():
         fp.write(json.dumps(cache_cn2en_dict))
 
 
-def save_new_cn_data():
+def save_new_cn_data(data):
     '''
     持久化中国海关数据
     :return:
@@ -173,7 +175,7 @@ if __name__ == '__main__':
         data['cn_product_desc2en_product_desc'] = [cache_cn2en(item) for item in data['商品名称']]
         print("====== cn_product_desc2en_product_desc ======")
 
-        save_new_cn_data()
+        save_new_cn_data(data)
         print("====== save data OK ======")
 
         save_cache_cn2en_dict()
